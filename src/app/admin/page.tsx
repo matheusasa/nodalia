@@ -23,6 +23,10 @@ export default function Admin() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ title: '', resumo: '', content: '', imagem: '', tags: '', published: true });
   const [saving, setSaving] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  const [aiAssunto, setAiAssunto] = useState('');
+  const [aiInstrucoes, setAiInstrucoes] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -47,6 +51,32 @@ export default function Admin() {
     setForm({ title: '', resumo: '', content: '', imagem: '', tags: '', published: true });
     setEditingId(null);
     setShowForm(false);
+    setShowAIPanel(false);
+    setAiAssunto('');
+    setAiInstrucoes('');
+  };
+
+  const handleGerarIA = async () => {
+    if (!aiAssunto.trim()) { alert('Informe o assunto para gerar a publicação.'); return; }
+    setAiGenerating(true);
+    try {
+      const res = await fetch('/api/ai/gerar-publicacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assunto: aiAssunto, instrucoes: aiInstrucoes }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Erro ao gerar.'); return; }
+      setForm((prev) => ({
+        ...prev,
+        title: data.title ?? prev.title,
+        resumo: data.resumo ?? prev.resumo,
+        content: data.content ?? prev.content,
+        tags: Array.isArray(data.tags) ? data.tags.join(', ') : prev.tags,
+      }));
+      setShowAIPanel(false);
+    } catch { alert('Erro ao conectar com a IA.'); }
+    setAiGenerating(false);
   };
 
   const handleEdit = (pub: Publicacao) => {
@@ -126,7 +156,80 @@ export default function Admin() {
         {/* Form */}
         {showForm && (
           <div className="bg-white rounded-2xl border border-border-subtle p-8 mb-8 shadow-sm">
-            <h2 className="font-heading text-xl font-bold mb-6">{editingId ? 'Editar' : 'Nova'} Publicação</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-xl font-bold">{editingId ? 'Editar' : 'Nova'} Publicação</h2>
+              <button
+                type="button"
+                onClick={() => setShowAIPanel((v) => !v)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_18px_rgba(139,92,246,0.35)] cursor-pointer"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+                </svg>
+                Gerar por IA
+              </button>
+            </div>
+
+            {/* AI Panel */}
+            {showAIPanel && (
+              <div className="mb-6 p-5 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200">
+                <p className="text-sm font-semibold text-violet-700 mb-4 flex items-center gap-1.5">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                  Geração com Inteligência Artificial
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-violet-800 mb-1">Assunto *</label>
+                    <input
+                      type="text"
+                      value={aiAssunto}
+                      onChange={(e) => setAiAssunto(e.target.value)}
+                      placeholder="Ex: Automação de WhatsApp para clínicas médicas"
+                      className="w-full px-4 py-2.5 rounded-lg bg-white border border-violet-200 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-violet-800 mb-1">Instruções adicionais</label>
+                    <textarea
+                      rows={2}
+                      value={aiInstrucoes}
+                      onChange={(e) => setAiInstrucoes(e.target.value)}
+                      placeholder="Ex: Foco em ROI, tom consultivo, mencionar integração com ERP..."
+                      className="w-full px-4 py-2.5 rounded-lg bg-white border border-violet-200 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 transition-all resize-none text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleGerarIA}
+                      disabled={aiGenerating}
+                      className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 cursor-pointer"
+                    >
+                      {aiGenerating ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                          Gerando...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                          Gerar Publicação
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAIPanel(false)}
+                      className="px-4 py-2 border border-violet-200 text-violet-600 font-medium text-sm rounded-lg hover:bg-violet-50 transition-all cursor-pointer"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Título *</label>
