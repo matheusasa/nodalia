@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Publicacao {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  title     String
+  resumo    String   @db.Text
+  content   String   @db.LongText
+  imagem    String?
+  tags      String   @default("[]")
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
