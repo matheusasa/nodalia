@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
     const publicacoes = await prisma.publicacao.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
-    const result = publicacoes.map((p) => ({
+    const result = publicacoes.map((p: (typeof publicacoes)[number]) => ({
       id: p.id,
       slug: p.slug,
       title: p.title,
@@ -22,7 +22,10 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: 'Erro ao buscar publicações' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao buscar publicações" },
+      { status: 500 },
+    );
   }
 }
 
@@ -32,15 +35,18 @@ export async function POST(request: Request) {
     const { title, resumo, content, imagem, tags, published } = body;
 
     if (!title || !resumo || !content) {
-      return NextResponse.json({ error: 'Título, resumo e conteúdo são obrigatórios' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Título, resumo e conteúdo são obrigatórios" },
+        { status: 400 },
+      );
     }
 
     const slug = title
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
     const publicacao = await prisma.publicacao.create({
       data: {
@@ -56,6 +62,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(publicacao, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Erro ao criar publicação' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao criar publicação" },
+      { status: 500 },
+    );
   }
 }
