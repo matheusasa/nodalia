@@ -168,7 +168,7 @@ export default function Admin() {
 
   return (
     <div className="pt-28 pb-16 min-h-screen bg-bg-secondary">
-      <div className="max-w-[1000px] mx-auto px-6">
+      <div className="max-w-250 mx-auto px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-heading text-3xl font-extrabold text-text-primary">
@@ -184,7 +184,7 @@ export default function Admin() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-accent-start to-accent-dark text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_20px_rgba(109,227,209,0.3)] cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-linear-to-br from-accent-start to-accent-dark text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_20px_rgba(109,227,209,0.3)] cursor-pointer"
             >
               <svg
                 className="w-5 h-5"
@@ -233,7 +233,7 @@ export default function Admin() {
               <button
                 type="button"
                 onClick={() => setShowAIPanel((v) => !v)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_18px_rgba(139,92,246,0.35)] cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_18px_rgba(139,92,246,0.35)] cursor-pointer"
               >
                 <svg
                   className="w-4 h-4"
@@ -259,7 +259,7 @@ export default function Admin() {
 
             {/* AI Panel */}
             {showAIPanel && (
-              <div className="mb-6 p-5 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200">
+              <div className="mb-6 p-5 rounded-xl bg-linear-to-br from-violet-50 to-purple-50 border border-violet-200">
                 <p className="text-sm font-semibold text-violet-700 mb-4 flex items-center gap-1.5">
                   <svg
                     className="w-4 h-4"
@@ -306,7 +306,7 @@ export default function Admin() {
                       type="button"
                       onClick={handleGerarIA}
                       disabled={aiGenerating}
-                      className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-br from-violet-500 to-purple-700 text-white font-semibold text-sm rounded-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 cursor-pointer"
                     >
                       {aiGenerating ? (
                         <>
@@ -444,7 +444,7 @@ export default function Admin() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-accent-start to-accent-dark text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-linear-to-br from-accent-start to-accent-dark text-white font-semibold text-sm rounded-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 cursor-pointer"
                 >
                   {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
                 </button>
