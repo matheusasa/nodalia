@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
+const geminiModel = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,14 +28,42 @@ Retorne APENAS um JSON válido com o seguinte formato, sem texto extra:
   "tags": ["tag1", "tag2", "tag3"]
 }`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-      temperature: 1,
-    });
+    if (!geminiApiKey) {
+      return NextResponse.json(
+        { error: "GEMINI_API_KEY ou GOOGLE_API_KEY não foi configurada." },
+        { status: 500 },
+      );
+    }
 
-    const raw = completion.choices[0].message.content ?? "{}";
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 1,
+            responseMimeType: "application/json",
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API respondeu com erro: ${response.status} ${errorText}`);
+    }
+
+    const payload = await response.json();
+    const raw = payload?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
     const data = JSON.parse(raw);
 
     return NextResponse.json(data);
